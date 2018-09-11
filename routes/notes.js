@@ -42,25 +42,13 @@ router.get('/:id', (req, res, next) => {
   .where({id: id})
   .returning(['id', 'title', 'content'])
   .then(result => {
-    if(result) {
+    if(result[0]) {
       res.json(result[0]);
     }
     else {
       next();
     }
   });
-  /*
-  notes.find(id)
-    .then(item => {
-      if (item) {
-        res.json(item);
-      } else {
-        next();
-      }
-    })
-    .catch(err => {
-      next(err);
-    });*/
 });
 
 // Put update an item
