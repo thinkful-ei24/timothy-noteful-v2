@@ -1,7 +1,9 @@
 -- psql -U dev -d noteful-app -f C:\Users\owner\projects\timothy-noteful-v2\db\noteful.sql
-
+-- SELECT setval('notes_id_seq', (SELECT MAX(notes.id) FROM notes) + 1);
 DROP TABLE IF EXISTS notes;
 DROP TABLE IF EXISTS folders;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS notes_tags;
 
 CREATE TABLE folders (
       id serial PRIMARY KEY,
@@ -23,6 +25,16 @@ CREATE TABLE notes (
   content text,
   created timestamp DEFAULT now(),
   folder_id int REFERENCES folders(id) ON DELETE SET NULL
+);
+
+CREATE TABLE tags (
+  id serial PRIMARY KEY,
+  name text UNIQUE
+);
+
+CREATE TABLE notes_tags (
+  note_id INTEGER NOT NULL REFERENCES notes ON DELETE CASCADE,
+  tag_id INTEGER NOT NULL REFERENCES tags ON DELETE CASCADE
 );
 
 ALTER SEQUENCE notes_id_seq RESTART WITH 1000;
@@ -74,3 +86,13 @@ INSERT INTO notes (title, content, folder_id) VALUES
   );
 
 
+INSERT INTO tags (name) VALUES
+('Fizz Buzz'),
+('Foo Bar'),
+('Dummy');
+
+INSERT INTO notes_tags (note_id, tag_id) VALUES
+(1000, 1),
+(1000, 2),
+(1001, 2),
+(1002, 1);
