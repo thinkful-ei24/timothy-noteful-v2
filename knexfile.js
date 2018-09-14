@@ -3,12 +3,7 @@
 module.exports = {
   development: {
     client: 'pg',
-    connection: {
-      host: 'localhost',
-      user: 'dev',
-      password: 'snooze11',
-      database: 'noteful-app'
-    },
+    connection: process.env.TEST_DATABASE_URL || 'postgres://localhost/noteful-test',
     debug: true, // http://knexjs.org/#Installation-debug
     pool: { min: 1, max: 2 }
   },
@@ -18,12 +13,7 @@ module.exports = {
   },
   test: {
     client: 'pg',
-    connection:  {
-      host: 'localhost',
-      user: 'dev',
-      password: 'snooze11',
-      database: 'noteful-test'
-    }, //process.env.TEST_DATABASE_URL || 'postgres://localhost/noteful-test',
+    connection: process.env.TEST_DATABASE_URL || 'postgres://localhost/noteful-test',
     pool: { min: 1, max: 2 }
   }
 };

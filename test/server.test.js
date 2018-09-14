@@ -120,6 +120,47 @@ describe('Noteful API', function () {
 
   });
 
+  describe('POST /api/notes', function () {
+
+    it('should create and return a new item when provided valid data', function () {
+      const newNote = {
+        title: 'The New Colossus',
+        content: 'Not like the brazen giant of Greek fame...',
+        folderId: 100,
+        tags: [1, 2]
+      };
+
+      return chai.request(app)
+        .post('/api/notes')
+        .send(newNote)
+        .then(function(res){
+          expect(res).to.have.status(201);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.have.all.keys('id', 'title', 'content', 'folder_id', 'folderName', 'tags');
+          expect(res.body.title).to.equal(newNote.title);
+          expect(res.body.content).to.equal(newNote.content);
+          expect(res.body.folder_id).to.equal(newNote.folderId);
+          expect(res.body.tags.length).to.equal(newNote.tags.length);
+        });
+    });
+
+    it('should return an error when missing "title" field', function () {
+      const invalidNote = {
+        content: 'Not like the brazen giant of Greek fame...',
+        folderId: 100,
+        tags: [1, 2]
+      };
+      return chai.request(app)
+      .post('/api/notes')
+      .send(invalidNote)
+      .then(function(res){
+        expect(res).to.have.status(400);
+      });
+    });
+
+  });
+
     
   });
 
