@@ -73,7 +73,7 @@ router.get('/:id', (req, res, next) => {
 // Put update an item
 router.put('/:id', (req, res, next) => {
   const id = req.params.id;
-  const tags = req.body.tags;
+  const tags = req.body.tags? req.body.tags : [];
   /***** Never trust users - validate input *****/
   let updateObj = {};
   const updateableFields = ['title', 'content', 'folderId'];
@@ -95,7 +95,7 @@ router.put('/:id', (req, res, next) => {
   updateObj = { 
     title,
     content, 
-    folder_id: Number(folderId)
+    folder_id: folderId? folderId : null
   };
 
   let noteId;

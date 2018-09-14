@@ -8,19 +8,6 @@ const expect = chai.expect;
 
 chai.use(chaiHttp);
 
-describe('Sanity check', function () {
-
-  it('true should be true', function () {
-    expect(true).to.be.true;
-  });
-
-  it('2 + 2 should equal 4', function () {
-    expect(2 + 2).to.equal(4);
-  });
-
-});
-
-
 describe('Static Server', function () {
 
   it('GET request "/" should return the index page', function () {
