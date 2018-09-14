@@ -84,9 +84,46 @@ describe('Noteful API', function () {
         });
     });
 
+ describe('GET /api/notes/:id', function () {
+
+    it('should return correct note when given an id', function () {
+      const validId = 1009;
+      const expectedNote = {
+        id: 1009,
+        title: "What the government doesn't want you to know about cats",
+        content: "Posuere sollicitudin aliquam ultrices sagittis orci a. Feugiat sed lectus vestibulum mattis ullamcorper velit. Odio pellentesque diam volutpat commodo sed egestas egestas fringilla. Velit egestas dui id ornare arcu odio. Molestie at elementum eu facilisis sed odio morbi. Tempor nec feugiat nisl pretium. At tempor commodo ullamcorper a lacus. Egestas dui id ornare arcu odio. Id cursus metus aliquam eleifend. Vitae sapien pellentesque habitant morbi tristique. Dis parturient montes nascetur ridiculus. Egestas egestas fringilla phasellus faucibus scelerisque eleifend. Aliquam faucibus purus in massa tempor nec feugiat nisl.",
+        folderId: 101,
+        folderName: 'Drafts',
+        tags: []
+      };
+
+      return chai.request(app)
+        .get(`/api/notes/${validId}`)
+        .then(function(res){
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.deep.equal(expectedNote);
+        });
+      
+    });
+
+    it('should respond with a 404 for an invalid id', function () {
+      const invalidId = 3000;
+      return chai.request(app)
+        .get(`/api/notes/${invalidId}`)
+        .then(function(res){
+          expect(res).to.have.status(404);
+        });
+
+    });
+
   });
 
-  
+    
+  });
+
+
 
 
 });
