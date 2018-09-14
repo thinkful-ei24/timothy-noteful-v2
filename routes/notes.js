@@ -87,7 +87,7 @@ router.put('/:id', (req, res, next) => {
   /***** Never trust users - validate input *****/
   if (!updateObj.title) {
     const err = new Error('Missing `title` in request body');
-    err.status = 400;
+    err.status = 404;
     return next(err);
   }
 
@@ -105,6 +105,11 @@ router.put('/:id', (req, res, next) => {
   .returning('id')
   .then(([id]) => {
     noteId = id;
+    if(!id) {
+      const err = new Error();
+      err.status = 404;
+      next(err);
+    }
     
     return knex('notes_tags')
       .where('notes_tags.note_id', noteId)
@@ -127,13 +132,8 @@ router.put('/:id', (req, res, next) => {
       const note = hydrateNotes(results)[0];
       if(note) res.json(note);
       else next();
-    });
-  /*
-  .then(item => {
-    if(item[0]) res.json(item[0]);
-    else next();
-  });
-*/
+    })
+    .catch(err => next(err));
 
 });
 
@@ -161,7 +161,7 @@ router.post('/', (req, res, next) => {
     })
     .then(() => {
       return knex('notes')
-        .select('notes.id', 'title', 'content', 'folders.id as folder_id', 'folders.name as folderName', 'tags.id as tagId', 'tags.name as tagName')
+        .select('notes.id', 'title', 'content', 'folders.id as folderId', 'folders.name as folderName', 'tags.id as tagId', 'tags.name as tagName')
         .leftJoin('folders', 'folders.id', 'notes.folder_id')
         .leftJoin('notes_tags', 'notes.id', 'notes_tags.note_id')
         .leftJoin('tags', 'notes_tags.tag_id', 'tags.id')
