@@ -19,7 +19,6 @@ describe('Static Server', function () {
         expect(res).to.be.html;
       });
   });
-
 });
 
 describe('Noteful API', function () {
@@ -48,7 +47,8 @@ describe('Noteful API', function () {
 
     it('should return correct search results for a valid query', function () {
       return chai.request(app)
-        .get('/api/notes?searchTerm=about%20cats')
+        .get('/api/notes')
+        .query({searchTerm: 'about cats'})
         .then(function (res) {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
@@ -59,6 +59,7 @@ describe('Noteful API', function () {
     });
 
     it('should return an array of objects where each item contains id, title, and content', function () {
+
       return chai.request(app)
       .get('/api/notes')
       .then(function (res) {
@@ -69,9 +70,11 @@ describe('Noteful API', function () {
     });
 
     it('should return an empty array for an incorrect searchTerm', function () {
+      const invalidSearchTerm = 'invalidsearchterm';
 
       return chai.request(app)
-        .get('/api/notes?searchTerm=invalidsearchterm')
+        .get('/api/notes')
+        .query({searchTerm: invalidSearchTerm})
         .then(function (res) {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
@@ -87,6 +90,7 @@ describe('Noteful API', function () {
 
     it('should respond with 404 when given a bad path', function () {
       const badPath = '/bad/path';
+
       return chai.request(app)
         .get(badPath)
         .then(function(res){
@@ -174,8 +178,7 @@ describe('Noteful API', function () {
   });
 
   describe('PUT /api/notes/:id', function () {
-    const validId = 1000;
-    const validUpdateObject = {
+    const updateObj = {
       title: 'Gettysburg Address',
       content: 'Four scores and seven years ago. . .',
       folderId: 100,
@@ -183,64 +186,107 @@ describe('Noteful API', function () {
     };
 
     it('should update the note', function () {
-      return chai.request(app)
-        .put(`/api/notes/${validId}`)
-        .send(validUpdateObject)
-        .then(function(res){
-          expect(res).to.have.status(200);
-          expect(res).to.be.json;
-          expect(res.body).to.be.an('object');
-          expect(res.body).to.have.all.keys('id', 'title', 'content', 'folderId', 'folderName', 'tags');
-          expect(res.body.title).to.equal(validUpdateObject.title);
-          expect(res.body.content).to.equal(validUpdateObject.content);
-          expect(res.body.folderId).to.equal(validUpdateObject.folderId);
-          expect(res.body.tags.length).to.equal(validUpdateObject.tags.length);
-        });
+      
+      let id;
+      
+      return knex
+        .select()
+        .from('notes')
+        .limit(1)
+        .then(results => {
+          const note = results[0];
+          id = note.id
+
+          return chai.request(app)
+            .put(`/api/notes/${id}`)
+            .send(updateObj)
+            .then(function(res){
+              expect(res).to.have.status(200);
+              expect(res).to.be.json;
+              expect(res.body).to.be.an('object');
+              expect(res.body).to.contain.keys('id', 'title', 'content','folderId', 'folderName', 'tags');
+
+              return knex 
+                .select()
+                .from('notes')
+                .where('id', id)
+                .then(results => {
+                  const note = results[0];
+                  expect(note.title).to.equal(updateObj.title);
+                  expect(note.content).to.equal(updateObj.content);
+                  expect(note.folder_id).to.equal(updateObj.folderId);
+                });
+            });
+        })
     });
 
     it('should respond with a 404 for an invalid id', function () {
-      const invalidId = 3000;
+      const invalidId = 999999;
+
       return chai.request(app)
         .put(`/api/notes/${invalidId}`)
-        .send(validUpdateObject)
+        .send(updateObj)
         .then(function(res){
           expect(res).to.have.status(404);
         });
     });
 
     it('should return an error when missing "title" field', function () {
-      const invalidUpdateObject = {
+      let id;
+      const invalidNote = {
         content: 'Four scores and seven years ago. . .',
         folderId: 100
       };
 
-      return chai.request(app)
-        .put(`/api/notes/${validId}`)
-        .send(invalidUpdateObject)
-        .then(function(res){
-          expect(res).to.have.status(404);
-        });
-    });
+      return knex 
+        .select()
+        .from('notes')
+        .limit(1)
+        .then(function(results){
+          const note = results[0];
+          id = note.id;
 
-  });
-
-  describe('DELETE  /api/notes/:id', function () {
-
-    it('should delete an item by id', function () {
-      const id = 1000;
-      return chai.request(app)
-        .delete(`/api/notes/${id}`)
-        .then(function(res){
-          expect(res).to.have.status(204);
           return chai.request(app)
-            .get(`/api/notes/${id}`)
+            .put(`/api/notes/${id}`)
+            .send(invalidNote)
             .then(function(res){
               expect(res).to.have.status(404);
             });
         });
-
     });
+  });
 
+  describe('DELETE /api/notes/:id', function () {
+
+    it('should delete an item by id', function () {
+      let id;
+      
+      return knex
+        .select()
+        .from('notes')
+        .limit(1)
+        .then(results => {
+          const note = results[0];
+          id = note.id;
+
+          return chai.request(app)
+            .delete(`/api/notes/${id}`)
+            .then(function(res){
+              expect(res).to.have.status(204);
+
+              //make sure the specified note is actually deleted from the database
+              return knex
+                .from('notes')
+                .select()
+                .where('id', id)
+                .then(results => {
+                  const note = results[0];
+                  expect(note).to.be.undefined;
+                });
+            });
+          });
+    });
   });
 
 });
+
