@@ -97,6 +97,7 @@ describe('Noteful API', function () {
           expect(res).to.have.status(404);
         });
     });
+  });
 
  describe('GET /api/notes/:id', function () {
 
@@ -117,10 +118,10 @@ describe('Noteful API', function () {
             .from('notes')
             .where('id', id);
 
-          const requestPromise = chai.request(app)
+          const reqPromise = chai.request(app)
             .get(`/api/notes/${id}`);
         
-          return Promise.all([dbPromise, requestPromise])
+          return Promise.all([dbPromise, reqPromise])
             .then(([notes, res]) => {
               const note = notes[0];
               expect(res).to.have.status(200);
@@ -171,8 +172,6 @@ describe('Noteful API', function () {
         expect(res).to.have.status(400);
       });
     });
-
-  });
 
   });
 
