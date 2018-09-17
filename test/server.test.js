@@ -131,7 +131,6 @@ describe('Noteful API', function () {
             });
         });
     });
-
   });
 
   describe('POST /api/notes', function () {
@@ -152,10 +151,10 @@ describe('Noteful API', function () {
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
           expect(res.body).to.have.all.keys('id', 'title', 'content', 'folderId', 'folderName', 'tags');
-          expect(res.body.title).to.equal(newNote.title);
-          expect(res.body.content).to.equal(newNote.content);
-          expect(res.body.folderId).to.equal(newNote.folderId);
-          expect(res.body.tags.length).to.equal(newNote.tags.length);
+          Object.keys(newNote).forEach(property => {
+            if(property !== 'tags') expect(res.body[property]).to.equal(newNote[property]);
+            else expect(property.length) === newNote.tags.length;
+          });
         });
     });
 
